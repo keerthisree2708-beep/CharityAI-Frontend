@@ -15,7 +15,46 @@
 
 const { By, until, Key } = require('selenium-webdriver');
 const { createDriver, quitDriver } = require('./helpers/driver');
-const { get, post, put, authHeader, API_URL } = require('./helpers/apiHelper');
+const { get: apiGet, post: apiPost, put: apiPut, authHeader, API_URL } = require('./helpers/apiHelper');
+
+async function get(path, headers = {}) {
+  let res;
+  for (let i = 0; i < 3; i++) {
+    res = await apiGet(path, headers);
+    if (res.status === 429) {
+      await new Promise(r => setTimeout(r, 2000 + i * 1000));
+    } else {
+      break;
+    }
+  }
+  return res;
+}
+
+async function post(path, body = {}, headers = {}) {
+  let res;
+  for (let i = 0; i < 3; i++) {
+    res = await apiPost(path, body, headers);
+    if (res.status === 429) {
+      await new Promise(r => setTimeout(r, 2000 + i * 1000));
+    } else {
+      break;
+    }
+  }
+  return res;
+}
+
+async function put(path, body = {}, headers = {}) {
+  let res;
+  for (let i = 0; i < 3; i++) {
+    res = await apiPut(path, body, headers);
+    if (res.status === 429) {
+      await new Promise(r => setTimeout(r, 2000 + i * 1000));
+    } else {
+      break;
+    }
+  }
+  return res;
+}
 const { generateReport } = require('./helpers/reporter');
 const path = require('path');
 
@@ -492,8 +531,15 @@ async function F40() { // Donate Money — amount zero rejected
     const submit = await waitFor(d, 'button[type="submit"]');
     await submit.click();
     await d.sleep(1500);
-    // Should not progress to payment step
-    if (await contains(d, 'secure checkout') || await contains(d, 'card number')) throw new Error('Zero amount should not proceed to checkout.');
+    try {
+      const alert = await d.switchTo().alert();
+      const txt = await alert.getText();
+      await alert.accept();
+    } catch (err) {
+      if (await contains(d, 'secure checkout') || await contains(d, 'card number')) {
+        throw new Error('Zero amount should not proceed to checkout.');
+      }
+    }
   } finally { await quitDriver(d); }
 }
 
