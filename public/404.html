@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CharityAI — Smart Giving, Real Impact</title>
+    <script type="text/javascript">
+      /**
+       * Single Page Apps for GitHub Pages — SPA redirect trick
+       * When GitHub Pages returns a 404, this page encodes the
+       * requested path into the query string and redirects to
+       * index.html, which then restores the URL via history.replaceState.
+       *
+       * pathSegmentsToKeep = 1 means we keep one path segment (the repo
+       * name "CharityAI-Frontend") before the app routes start.
+       */
+      var pathSegmentsToKeep = 1;
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.host + l.pathname.split('/')
+          .slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/')
+          .replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
