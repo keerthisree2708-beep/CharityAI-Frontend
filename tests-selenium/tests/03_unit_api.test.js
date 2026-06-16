@@ -7,6 +7,9 @@
 
 const { get, post, authHeader, API_URL } = require('../helpers/apiHelper');
 
+let TEST_EMAIL = process.env.TEST_EMAIL || '';
+let TEST_PASSWORD = process.env.TEST_PASSWORD || '';
+
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
 async function runTest(id, category, name, fn) {
@@ -92,8 +95,8 @@ async function U02_registerEndpointReturnsToken() {
  * U-03: Login endpoint — POST /api/auth/login returns a JWT token for valid credentials.
  */
 async function U03_loginEndpointReturnsToken() {
-  const email    = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASSWORD;
+  const email    = TEST_EMAIL;
+  const password = TEST_PASSWORD;
 
   if (!email || !password) {
     throw new Error('TEST_EMAIL / TEST_PASSWORD not configured — cannot test login endpoint.');
@@ -117,7 +120,7 @@ async function U03_loginEndpointReturnsToken() {
  */
 async function U04_loginWrongPasswordReturns401() {
   const res = await post('/auth/login', {
-    email:    process.env.TEST_EMAIL || 'nobody_real@charityaitest.com',
+    email:    TEST_EMAIL || 'nobody_real@charityaitest.com',
     password: 'absolutelyWrongPassword_xyz_99',
   });
 
@@ -141,8 +144,8 @@ async function U05_profileEndpointRequiresAuth() {
   }
 
   // With a valid token
-  const email    = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASSWORD;
+  const email    = TEST_EMAIL;
+  const password = TEST_PASSWORD;
   if (email && password) {
     const loginRes = await post('/auth/login', { email, password });
     const token = loginRes.data?.data?.token || loginRes.data?.token;
@@ -188,6 +191,32 @@ async function U07_nearbyNgosEndpointResponds() {
 
 async function runUnitApiTests() {
   console.log('\n⚙️  Running UNIT / API Tests (U-01 → U-07)...\n');
+
+  if (!TEST_EMAIL || !TEST_PASSWORD) {
+    console.log('  [03_unit_api] TEST_EMAIL/TEST_PASSWORD not configured. Registering a test user dynamically...');
+    try {
+      const uniqueSuffix = Date.now();
+      const uniqueEmail = `api_test_${uniqueSuffix}@charityaitest.com`;
+      const res = await post('/auth/register', {
+        name:     'API Test User',
+        email:    uniqueEmail,
+        password: 'APITestPass@123',
+        phone:    `+9190000${uniqueSuffix.toString().slice(-5)}`,
+        address:  'API Test City',
+        role:     'donor',
+      });
+      if (res.status === 201 || res.status === 200) {
+        TEST_EMAIL = uniqueEmail;
+        TEST_PASSWORD = 'APITestPass@123';
+        console.log(`  [03_unit_api] Dynamic test user registered: ${TEST_EMAIL}`);
+      } else {
+        console.log(`  [03_unit_api] Failed to register dynamic test user (status: ${res.status})`);
+      }
+    } catch (err) {
+      console.warn('  ⚠️ [03_unit_api] Error registering dynamic test user:', err.message);
+    }
+  }
+
   const CAT = 'Unit/API';
   const results = [];
 

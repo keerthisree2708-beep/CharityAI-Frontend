@@ -1,0 +1,7 @@
+node_modules
+tests-selenium/reports/
+tests-selenium/screenshots/
+tests-selenium/node_modules/
+.env
+.env.local
+.env.production

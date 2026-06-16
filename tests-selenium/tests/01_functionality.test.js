@@ -10,6 +10,9 @@ const { createDriver, quitDriver } = require('../helpers/driver');
 
 const BASE = process.env.TEST_BASE_URL || 'http://localhost:5173';
 
+let TEST_EMAIL = process.env.TEST_EMAIL || '';
+let TEST_PASSWORD = process.env.TEST_PASSWORD || '';
+
 // ─── Utility helpers ─────────────────────────────────────────────────────────
 
 /** Navigate to a path and wait for the page to be interactive. */
@@ -94,8 +97,8 @@ async function F03_loginRegisterButtonsRedirect() {
 async function F04_loginValidCredentials() {
   const driver = await createDriver();
   try {
-    const email = process.env.TEST_EMAIL;
-    const password = process.env.TEST_PASSWORD;
+    const email = TEST_EMAIL;
+    const password = TEST_PASSWORD;
     if (!email || !password) throw new Error('TEST_EMAIL / TEST_PASSWORD not set — skipping live login test.');
 
     await goto(driver, '/login');
@@ -238,7 +241,7 @@ async function F08_registerWithValidData() {
 async function F09_registerDuplicateEmailShowsError() {
   const driver = await createDriver();
   try {
-    const existingEmail = process.env.TEST_EMAIL;
+    const existingEmail = TEST_EMAIL;
     if (!existingEmail) throw new Error('TEST_EMAIL not set — cannot test duplicate email.');
 
     await goto(driver, '/register');
@@ -370,6 +373,34 @@ async function F15_notFoundPageShows() {
 
 async function runFunctionalityTests() {
   console.log('\n🧪 Running FUNCTIONALITY Tests (F-01 → F-15)...\n');
+
+  if (!TEST_EMAIL || !TEST_PASSWORD) {
+    console.log('  [01_functionality] TEST_EMAIL/TEST_PASSWORD not configured. Registering a test user dynamically...');
+    try {
+      const axios = require('axios');
+      const API_URL = process.env.TEST_API_URL || 'https://charityai-backend.onrender.com/api';
+      const uniqueSuffix = Date.now();
+      const uniqueEmail = `ui_test_${uniqueSuffix}@charityaitest.com`;
+      const res = await axios.post(`${API_URL}/auth/register`, {
+        name:     'UI Test User',
+        email:    uniqueEmail,
+        password: 'APITestPass@123',
+        phone:    `+9190000${uniqueSuffix.toString().slice(-5)}`,
+        address:  'UI Test City',
+        role:     'donor',
+      }, { timeout: 20000, validateStatus: () => true });
+      if (res.status === 201 || res.status === 200) {
+        TEST_EMAIL = uniqueEmail;
+        TEST_PASSWORD = 'APITestPass@123';
+        console.log(`  [01_functionality] Dynamic test user registered: ${TEST_EMAIL}`);
+      } else {
+        console.log(`  [01_functionality] Failed to register dynamic test user (status: ${res.status})`);
+      }
+    } catch (err) {
+      console.warn('  ⚠️ [01_functionality] Error registering dynamic test user:', err.message);
+    }
+  }
+
   const CAT = 'Functionality';
   const results = [];
 

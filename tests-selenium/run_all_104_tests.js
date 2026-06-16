@@ -23,8 +23,8 @@ const path = require('path');
 try { require('fs').accessSync(path.join(__dirname, '../.env')); require('dotenv').config({ path: path.join(__dirname, '../.env') }); } catch (_) {}
 
 const BASE     = process.env.TEST_BASE_URL || 'http://localhost:5173';
-const EMAIL    = process.env.TEST_EMAIL    || '';
-const PASSWORD = process.env.TEST_PASSWORD || '';
+let EMAIL    = process.env.TEST_EMAIL    || '';
+let PASSWORD = process.env.TEST_PASSWORD || '';
 const TIMEOUT  = parseInt(process.env.SELENIUM_TIMEOUT || '30000', 10);
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -879,6 +879,30 @@ async function runAllTests() {
   console.log(`\n  Base URL : ${BASE}`);
   console.log(`  API URL  : ${API_URL}`);
   console.log(`  Started  : ${new Date().toLocaleString()}\n`);
+
+  // Ensure backend is awake and setup dynamic credentials if not provided
+  console.log('  Warming up backend and preparing credentials...');
+  try {
+    await U01();
+  } catch (err) {
+    console.warn('  ⚠️ Warning: Backend health check failed before test initialization:', err.message);
+  }
+
+  if (!EMAIL || !PASSWORD) {
+    console.log('  TEST_EMAIL/TEST_PASSWORD not configured. Registering a test user dynamically...');
+    try {
+      const u = await registerTestUser();
+      if (u.token) {
+        EMAIL = u.email;
+        PASSWORD = 'CiTestPass@123';
+        console.log(`  Dynamic test user registered: ${EMAIL}`);
+      } else {
+        console.warn(`  ⚠️ Failed to register dynamic test user (status: ${u.status})`);
+      }
+    } catch (err) {
+      console.warn('  ⚠️ Error registering dynamic test user:', err.message);
+    }
+  }
 
   const results = [];
   const start = Date.now();
