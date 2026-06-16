@@ -67,7 +67,7 @@ jobs:
         working-directory: tests-selenium
         env:
           # Frontend URL — set this to your GitHub Pages URL
-          TEST_BASE_URL: ${{ vars.TEST_BASE_URL || 'https://charityai-frontend.vercel.app' }}
+          TEST_BASE_URL: ${{ vars.TEST_BASE_URL || 'https://keerthisree2708-beep.github.io/CharityAI-Frontend' }}
           # Backend API URL
           TEST_API_URL: https://charityai-backend.onrender.com/api
           # Test account credentials (stored as GitHub Secrets)
