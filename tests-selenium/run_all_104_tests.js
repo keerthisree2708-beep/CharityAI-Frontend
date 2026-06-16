@@ -14,12 +14,13 @@
  */
 
 const { By, until, Key } = require('selenium-webdriver');
-const { createDriver, quitDriver } = require('../helpers/driver');
-const { get, post, put, authHeader, API_URL } = require('../helpers/apiHelper');
-const { generateReport } = require('../helpers/reporter');
+const { createDriver, quitDriver } = require('./helpers/driver');
+const { get, post, put, authHeader, API_URL } = require('./helpers/apiHelper');
+const { generateReport } = require('./helpers/reporter');
 const path = require('path');
 
 // ─── Load env ─────────────────────────────────────────────────────────────────
+try { require('fs').accessSync(path.join(__dirname, '.env')); require('dotenv').config({ path: path.join(__dirname, '.env') }); } catch (_) {}
 try { require('fs').accessSync(path.join(__dirname, '../.env')); require('dotenv').config({ path: path.join(__dirname, '../.env') }); } catch (_) {}
 
 const BASE     = process.env.TEST_BASE_URL || 'http://localhost:5173';
@@ -1076,7 +1077,7 @@ async function runAllTests() {
   console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
   // ── Generate report ──────────────────────────────────────────────────────
-  const reportDir = path.join(__dirname, '../reports');
+  const reportDir = path.join(__dirname, 'reports');
   try {
     const file = await generateReport(results, reportDir);
     console.log(`📊 Report: ${file}\n`);
