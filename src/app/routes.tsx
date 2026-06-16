@@ -109,4 +109,4 @@ export const router = createBrowserRouter([
     ]
   },
   { path: "*", element: withSuspense(NotFound) },
-]);
+], { basename: import.meta.env.BASE_URL });
