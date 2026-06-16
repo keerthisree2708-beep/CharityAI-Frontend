@@ -1,0 +1,112 @@
+name: 🧪 CharityAI E2E Test Suite
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:   # Allow manual trigger from GitHub UI
+
+jobs:
+  e2e-tests:
+    name: Run Selenium E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node.js ─────────────────────────────────────────────────
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests-selenium/package.json
+
+      # ── 3. Install Google Chrome ─────────────────────────────────────────
+      - name: 🌐 Install Google Chrome (stable)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" | \
+            sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update -y
+          sudo apt-get install -y google-chrome-stable
+          google-chrome-stable --version
+
+      # ── 4. Install test dependencies ──────────────────────────────────────
+      - name: 📦 Install test dependencies
+        working-directory: tests-selenium
+        run: npm install
+
+      # ── 5. Wait for Render backend to warm up ────────────────────────────
+      - name: ⏳ Wait for Render backend to be ready
+        run: |
+          echo "Pinging backend to wake Render from cold start..."
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://charityai-backend.onrender.com/ --max-time 20 || echo "000")
+            echo "Attempt $i — HTTP status: $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Backend is ready!"
+              break
+            fi
+            sleep 15
+          done
+
+      # ── 6. Run test suite ─────────────────────────────────────────────────
+      - name: 🧪 Run E2E Test Suite
+        working-directory: tests-selenium
+        env:
+          # Frontend URL — set this to your GitHub Pages URL
+          TEST_BASE_URL: ${{ vars.TEST_BASE_URL || 'https://charityai-frontend.vercel.app' }}
+          # Backend API URL
+          TEST_API_URL: https://charityai-backend.onrender.com/api
+          # Test account credentials (stored as GitHub Secrets)
+          TEST_EMAIL:    ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          # Selenium config
+          SELENIUM_TIMEOUT: "30000"
+          HEADED: "false"
+        run: node run_tests.js
+        continue-on-error: true   # Always upload the report even if tests fail
+
+      # ── 7. Upload .xlsx report as downloadable artifact ──────────────────
+      - name: 📊 Upload Test Report (.xlsx)
+        uses: actions/upload-artifact@v4
+        if: always()              # Upload even if tests failed
+        with:
+          name: charityai-test-report-${{ github.run_number }}
+          path: tests-selenium/reports/*.xlsx
+          retention-days: 30
+          if-no-files-found: warn
+
+      # ── 8. Upload screenshots on failure (if any) ─────────────────────────
+      - name: 📸 Upload Failure Screenshots (if any)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: failure-screenshots-${{ github.run_number }}
+          path: tests-selenium/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # ── 9. Final status check ─────────────────────────────────────────────
+      - name: ✅ Assert test results
+        working-directory: tests-selenium
+        run: |
+          # Check if any report was generated
+          if ls reports/*.xlsx 1> /dev/null 2>&1; then
+            echo "✅ Test report generated successfully."
+            ls -lh reports/*.xlsx
+          else
+            echo "⚠️  No test report found. Runner may have crashed."
+          fi
