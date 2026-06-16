@@ -1,4 +1,4 @@
-name: 🧪 CharityAI E2E Test Suite
+name: 🧪 CharityAI — 104 E2E Test Suite
 
 on:
   push:
@@ -76,7 +76,7 @@ jobs:
           # Selenium config
           SELENIUM_TIMEOUT: "30000"
           HEADED: "false"
-        run: node run_tests.js
+        run: node run_all_104_tests.js
         continue-on-error: true   # Always upload the report even if tests fail
 
       # ── 7. Upload .xlsx report as downloadable artifact ──────────────────
@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()              # Upload even if tests failed
         with:
-          name: charityai-test-report-${{ github.run_number }}
+          name: charityai-104-test-report-${{ github.run_number }}
           path: tests-selenium/reports/*.xlsx
           retention-days: 30
           if-no-files-found: warn
