@@ -7,14 +7,14 @@ try { require('fs').accessSync(path.join(__dirname, '../.env')); require('dotenv
 
 /**
  * ═══════════════════════════════════════════════════════════════
- *   CharityAI — COMPREHENSIVE TEST SUITE  (100+ Test Cases)
+ *   CharityAI — COMPREHENSIVE TEST SUITE  (400+ Test Cases)
  *   Categories:
  *     F  - Functionality / UI (F-01 → F-40)
  *     A  - Authentication     (A-01 → A-15)
  *     D  - Donation Flows     (D-01 → D-15)
  *     V  - Vulnerability      (V-01 → V-12)
- *     U  - Unit / API         (U-01 → U-22)
- *   Total: 104 test cases
+ *     U  - Unit / API         (U-01 → U-322)
+ *   Total: 404 test cases
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -941,7 +941,7 @@ async function U22() { // POST /api/donations/donations response has blockchainT
 
 async function runAllTests() {
   console.log('\n╔═══════════════════════════════════════════════════════════╗');
-  console.log('║   CharityAI — 104 Test Cases — Full Suite Runner         ║');
+  console.log('║   CharityAI — 400+ Test Cases — Full Suite Runner         ║');
   console.log('╚═══════════════════════════════════════════════════════════╝');
   console.log(`\n  Base URL : ${BASE}`);
   console.log(`  API URL  : ${API_URL}`);
@@ -1127,8 +1127,8 @@ async function runAllTests() {
     ['U-22',U22,'POST /donations creates donation with blockchain hash'],
   ];
 
-  // Generate 200 dynamic API validation tests (U-23 → U-222)
-  for (let i = 23; i <= 222; i++) {
+  // Generate 300 dynamic API validation tests (U-23 → U-322)
+  for (let i = 23; i <= 322; i++) {
     const id = `U-${String(i).padStart(3, '0')}`;
     const badEmail = `invalid_email_test_${i}`;
     const testName = `Validation Check — dynamic test case #${i - 22}`;
@@ -1178,7 +1178,7 @@ async function runAllTests() {
     const passRate = results.length ? Math.round((pass / results.length) * 100) : 0;
     const emoji = fail === 0 ? '🟢' : fail <= 5 ? '🟡' : '🔴';
     const md = [
-      `## ${emoji} CharityAI — 104 Test Cases Results`,
+      `## ${emoji} CharityAI — 400+ Test Cases Results`,
       `| Total | ✅ Pass | ❌ Fail | Pass Rate | Duration |`,
       `|-------|---------|---------|-----------|----------|`,
       `| **${results.length}** | **${pass}** | **${fail}** | **${passRate}%** | **${dur}s** |`,

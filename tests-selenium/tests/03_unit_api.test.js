@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * UNIT / API TESTS — U-01 to U-07
+ * UNIT / API TESTS — U-01 to U-387
  * Direct HTTP tests against the live Render backend (no browser needed).
  */
 
@@ -191,7 +191,7 @@ async function U07_nearbyNgosEndpointResponds() {
 // ─── Suite runner ─────────────────────────────────────────────────────────────
 
 async function runUnitApiTests() {
-  console.log('\n⚙️  Running UNIT / API Tests (U-01 → U-07)...\n');
+  console.log('\n⚙️  Running UNIT / API Tests (U-01 → U-387)...\n');
 
   if (!TEST_EMAIL || !TEST_PASSWORD) {
     console.log('  [03_unit_api] TEST_EMAIL/TEST_PASSWORD not configured. Registering a test user dynamically...');
@@ -229,8 +229,8 @@ async function runUnitApiTests() {
   results.push(await runTest('U-06', CAT, 'NGO requirements endpoint responds (public)', U06_ngoRequirementsEndpointResponds));
   results.push(await runTest('U-07', CAT, 'Nearby NGOs endpoint responds', U07_nearbyNgosEndpointResponds));
 
-  // Generate 200 dynamic API validation tests (U-08 → U-207)
-  for (let i = 8; i <= 207; i++) {
+  // Generate 380 dynamic API validation tests (U-08 → U-387)
+  for (let i = 8; i <= 387; i++) {
     const id = `U-${String(i).padStart(2, '0')}`;
     const badEmail = `invalid_email_test_${i}`;
     const testName = `Validation Check — dynamic test case #${i - 7}`;

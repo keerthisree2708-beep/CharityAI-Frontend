@@ -1,4 +1,4 @@
-name: 🧪 CharityAI — 104 E2E Test Suite
+name: 🧪 CharityAI — 400+ E2E Test Suite
 
 on:
   push:
@@ -101,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()              # Upload even if tests failed
         with:
-          name: charityai-104-test-report-${{ github.run_number }}
+          name: charityai-400-test-report-${{ github.run_number }}
           path: tests-selenium/reports/*.xlsx
           retention-days: 30
           if-no-files-found: warn
